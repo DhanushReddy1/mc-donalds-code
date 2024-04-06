@@ -1,0 +1,123 @@
+import numpy as np
+import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from scipy.cluster.hierarchy import linkage, dendrogram
+from sklearn.mixture import GaussianMixture
+from statsmodels.formula.api import ols
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+
+# Load the data
+mcdonalds = pd.read_csv('C:/Users/bavit/Downloads/mcdonalds.csv')
+
+# Explore the data
+print(mcdonalds.columns)
+print(mcdonalds.shape)
+print(mcdonalds.head(3))
+
+# Preprocess the data
+MD_x = (mcdonalds.iloc[:, 0:11] == 'Yes').astype(int)
+print(MD_x.mean().round(2))
+
+# Principal Component Analysis
+MD_pca = PCA(n_components=len(MD_x.columns))
+MD_pca.fit(MD_x)
+print(MD_pca.explained_variance_ratio_)
+print(MD_pca.components_.round(1))
+
+# Visualize the PCA
+plt.figure()
+plt.scatter(MD_pca.transform(MD_x)[:, 0], MD_pca.transform(MD_x)[:, 1], color='grey')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.show()
+
+# K-Means Clustering
+
+#from sklearn.cluster import KMeans
+#for k in range(2, 9):
+#    km = KMeans(n_clusters=k, random_state=1234).fit(MD_x)
+#    print(f'For k={k}, Silhouette Score: {km.score(MD_x):.3f}')
+
+#MD_km4 = KMeans(n_clusters=4, random_state=1234).fit(MD_x)
+#print(MD_km4.labels_)
+# Open Command Prompt or Anaconda Prompt
+# Set the OMP_NUM_THREADS environment variable
+#set OMP_NUM_THREADS=6
+
+from sklearn.cluster import MiniBatchKMeans
+
+# Set the number of clusters to explore
+
+for k in range(2, 9):
+    km = MiniBatchKMeans(n_clusters=k, random_state=1234, batch_size=100).fit(MD_x)
+    print(f'For k={k}, Silhouette Score: {km.score(MD_x):.3f}')
+
+# Fit MiniBatchKMeans with 4 clusters
+MD_km4 = MiniBatchKMeans(n_clusters=4, random_state=1234, batch_size=100).fit(MD_x)
+print(MD_km4.labels_)
+
+# Visualize the clusters
+plt.figure()
+plt.scatter(MD_pca.transform(MD_x)[:, 0], MD_pca.transform(MD_x)[:, 1], c=MD_km4.labels_)
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.show()
+
+
+# Gaussian Mixture Model
+from sklearn.mixture import GaussianMixture
+for k in range(2, 9):
+    gm = GaussianMixture(n_components=k, random_state=1234).fit(MD_x)
+    print(f'For k={k}, BIC: {gm.bic(MD_x):.3f}')
+
+MD_gm4 = GaussianMixture(n_components=4, random_state=1234).fit(MD_x)
+print(MD_gm4.means_)
+print(MD_gm4.covariances_)
+
+
+# Regression
+
+import pandas as pd
+from statsmodels.formula.api import ols
+
+# Remove non-numeric characters from 'Like' column and convert to int
+mcdonalds['Like'] = mcdonalds['Like'].str.replace(r'\D', '', regex=True).astype(int)
+
+# Create the dependent variable 'Like_n'
+mcdonalds['Like_n'] = 6 - mcdonalds['Like']
+
+# Construct the formula for regression
+formula = 'Like_n ~ ' + ' + '.join(mcdonalds.columns[:11])
+
+# Fit the regression model
+model = ols(formula, data=mcdonalds).fit()
+
+# Print the summary of the regression results
+print(model.summary())
+
+
+# Decision Tree
+
+from sklearn.preprocessing import OneHotEncoder
+
+# Convert categorical variables to one-hot encoding
+X_encoded = pd.get_dummies(X, columns=['VisitFrequency', 'Gender'])
+
+# Fit the decision tree classifier
+tree.fit(X_encoded, y)
+
+# Plot the decision tree
+plot_tree(tree, feature_names=X_encoded.columns, class_names=['Not Segment 3', 'Segment 3'], filled=True)
+plt.show()
+
+
+# Visualize the segments
+plt.figure()
+plt.scatter(MD_pca.transform(MD_x)[:, 0], MD_pca.transform(MD_x)[:, 1], c=MD_km4.labels_)
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.show()
+
+
